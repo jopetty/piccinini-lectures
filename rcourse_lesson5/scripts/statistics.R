@@ -21,3 +21,61 @@ xtabs(~state+incumbent_party, data_stats)
 
 # Check if civil war is within-state
 xtabs(~state+civil_war, data_stats)
+
+## BUILD MODELS ####
+# ANOVA (base R)
+incumbent.aov = aov(perc_incumbent_mean ~ incumbent_party * civil_war +
+                      Error(state/incumbent_party), data = data_stats)
+
+incumbent.aov_sum = summary(incumbent.aov)
+incumbent.aov_sum
+
+# ezANOVA
+incumbent.ezanova = ezANOVA(data.frame(data_stats),
+                            dv = perc_incumbent_mean,
+                            wid = state,
+                            within = incumbent_party,
+                            between = civil_war,
+                            type = 3)
+
+incumbent.ezanova
+
+# Prepare data for t-test
+data_union_stats = data_stats %>%
+  filter(civil_war == "union") %>%
+  spread(incumbent_party, perc_incumbent_mean)
+
+data_confederacy_stats = data_stats %>%
+  filter(civil_war == "confederacy") %>%
+  spread(incumbent_party, perc_incumbent_mean)
+
+data_democrat_stats = data_stats %>%
+  filter(incumbent_party == "democrat")
+
+data_republican_stats = data_stats %>%
+  filter(incumbent_party == "republican")
+
+## FOLLOW-UP T-TESTS ####
+# Effect of incumbent party, separated by civil war
+incumbent_union.ttest = t.test(data_union_stats$democrat,
+                               data_union_stats$republican,
+                               paired = T)
+incumbent_union.ttest
+
+incumbent_confederacy.ttest = t.test(data_confederacy_stats$democrat,
+                                     data_confederacy_stats$republican,
+                                     paired = T)
+incumbent_confederacy.ttest
+
+# Effect of incumbent party, separated by civil war
+# NOTE: RUNNING THIS WILL RESULT IN AN ERROR DUE TO A BUG IN R:
+# SEE https://stackoverflow.com/questions/78458868/using-a-formula-with-wilcox-test-when-paired-true-thrrows-an-error-all-of-a-su
+incumbent_democrat.ttest = t.test(perc_incumbent_mean ~ civil_war,
+                                  paired = F,
+                                  data = data_democrat_stats)
+incumbent_democrat.ttest
+
+incumbent_republican.ttest = t.test(perc_incumbent_mean ~ civil_war,
+                                    paired = F,
+                                    data = data_republican_stats)
+incumbent_republican.ttest
