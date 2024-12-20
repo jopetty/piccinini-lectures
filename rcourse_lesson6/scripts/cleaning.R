@@ -59,3 +59,28 @@ data_clean = data_results %>%
   inner_join(data_subjects) %>%
   inner_join(data_items) %>%
   mutate(half = ifelse(block == "one" | block == "two", "first", "second"))
+
+# Get RT outlier information
+# data_rt_sum = data_clean %>%
+#   group_by(subject_id, congruency, half) %>%
+#   summarise(rt_mean = mean(rt),
+#             rt_sd = sd(rt)) %>%
+#   ungroup()
+
+data_rt_sum = data_clean %>%
+  group_by(subject_id, congruency, half) %>%
+  summarise(rt_mean = mean(rt),
+            rt_sd = sd(rt)) %>%
+  ungroup() %>%
+  mutate(rt_high = rt_mean + (2 * rt_sd)) %>%
+  mutate(rt_low = rt_mean - (2 * rt_sd))
+
+# Remove data points with slow RTs for accuracy data
+data_accuracy_clean = data_clean %>%
+  inner_join(data_rt_sum) %>%
+  filter(rt < rt_high) %>%
+  filter(rt > rt_low)
+
+# Remove data points with incorrect response for RT data
+data_rt_clean = data_accuracy_clean %>%
+  filter(accuracy == "1")
