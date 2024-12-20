@@ -74,8 +74,48 @@ accuracy_congruencyxhalf.anova
 
 ## BUILD MODELS FOR REACTION TIME ANALYSIS ####
 # Full model
+
+## NOTE: ON THE WEBSITE THERE IS AN ERROR IN THE FOLLOWING CODE
+# (0+half_contrast|item), REML = F, NOT (0+experiment_half|item), REML = F,
+
 rt_log10.lmer = lmer(rt_log10 ~ congruency_contrast * half_contrast +
                        (1+congruency_contrast*half_contrast|subject_id) +
                        (1|item) +
                        (0+half_contrast|item), REML = F,
                      data = data_rt_stats)
+
+rt_log10.lmer_sum = summary(rt_log10.lmer)
+rt_log10.lmer_sum
+
+# Test for effect of congruency
+rt_log10_congruency.lmer = lmer(rt_log10 ~ congruency_contrast * half_contrast -
+                                  congruency_contrast +
+                                  (1+congruency_contrast*half_contrast|subject_id) +
+                                  (1|item) +
+                                  (0+half_contrast|item), REML = F,
+                                data = data_rt_stats)
+
+rt_log10_congruency.anova = anova(rt_log10.lmer, rt_log10_congruency.lmer)
+rt_log10_congruency.anova
+
+# Test for effect of experiment half
+rt_log10_half.lmer = lmer(rt_log10 ~ congruency_contrast * half_contrast -
+                            half_contrast +
+                            (1+congruency_contrast*half_contrast|subject_id) +
+                            (1|item) +
+                            (0+half_contrast|item), REML = F,
+                          data = data_rt_stats)
+
+rt_log10_half.anova = anova(rt_log10.lmer, rt_log10_half.lmer)
+rt_log10_half.anova
+
+# Test for interaction of congruency and experiment half
+rt_log10_congruencyxhalf.lmer = lmer(rt_log10 ~ congruency_contrast * half_contrast -
+                                       congruency_contrast:half_contrast +
+                                       (1+congruency_contrast*half_contrast|subject_id) +
+                                       (1|item) +
+                                       (0+half_contrast|item), REML = F,
+                                     data = data_rt_stats)
+
+rt_log10_congruencyxhalf.anova = anova(rt_log10.lmer, rt_log10_congruencyxhalf.lmer)
+rt_log10_congruencyxhalf.anova

@@ -1,0 +1,86 @@
+---
+title: "Lesson 6 Write-Up"
+author: "Jackson Petty"
+date: "2024-12-20"
+output: html_document
+---
+
+```{r, echo=FALSE}
+load("environment.RData")
+```
+
+# Introduction
+
+The [Stroop effect](https://en.wikipedia.org/wiki/Stroop_effect) is a well known example in psychology of when it is difficult to ignore conflicting information. My data comes from participants in an R course who conducted the experiment online.
+
+
+# Methods
+
+## Participants
+
+Participants were `r length(unique(data_subjects$subject_id))` French speakers, some native (`r length(unique(subset(data_subjects, native_french == "yes")$subject_id))`) and some non-native (`r length(unique(subset(data_subjects, native_french == "no")$subject_id))`) French speakers. There were `r length(unique(subset(data_subjects, sex == "female")$subject_id))` females and `r length(unique(subset(data_subjects, sex == "male")$subject_id))` males. The average age of all participants was `r round(mean(data_subjects$age), 2)` years old.
+
+## Materials
+
+There were a total of eight unique items based on the colors blue, red, yellow, and green (in French, *bleu*, *rouge*, *jaune*, and *vert*). For half of the items the color of the text and the word itself were the same (e.g. the word *bleu* in blue ink), these will be referred to as congruent trials. The other half of items had a mismatch between word text and color (e.g. the word *bleu* in green ink).
+
+## Procedure
+
+Participants were presented with a word and told to type the first letter of the ink color of the word. There were four blocks in total, within each block the eight items were randomized, coming to 32 trials in total. The experiment was conducted via an online interface.
+
+
+# Results
+
+## Accuracy
+
+The first test examines overall participant accuracy on the task across condition. As shown in the figure below, participant accuracy is quite high in both conditions (well above the 50% baseline), though participant accuracy is meaningfully lower in conditions when simuli are incongruent (purple) compared to when they are congruent (orange). In the incongruent condition, the variance in participant accuracy is higher, resulting in a mean accuracy of around 88%, compared to a mean accuracy of around 100% in the congruent condition.
+
+```{r, echo=FALSE, fig.align='center'}
+accuracy.plot
+```
+
+To quantify the effects of congruency on participant accuracy we run a generalized linear mixed effects model, fitting the response (accuracy) to congruency (congruent & incongruent), experiment half (first & second), and the interaction between these two. We also include random effects for participant and test item, which are modeled as random intercepts and random slopes. We assess the significance of all model effects against an alpha value of $\alpha=0.05$, as is standard.
+
+The model found a significant effect of congruency, such that there was lower accuracy on incongruent trials compared to congruent trial [$\beta = `r round(coef(accuracy.glmer_sum)[2,1], 2)`$, $SE = `r round(coef(accuracy.glmer_sum)[2,2], 2)`$, $\chi^2(1) = `r round(accuracy_congruency.anova$Chisq[2], 2)`$, $p  < 0.05$]. There was no effect of experiment half and no significant interaction of congruency and experiment half.
+
+```{r}
+coef(accuracy.glmer_sum)[,1:2]
+accuracy_congruency.anova[1:8]
+accuracy_half.anova[1:8]
+accuracy_congruencyxhalf.anova[1:8]
+```
+
+These results support the conclusion that congruency meaningfully impacted participant accuracy but that experiment half did not, and further that there were no signigicant interactions between congruency and experiment half (which intuitively makes sense).
+
+## Reaction Times
+
+We also study whether congruency and experiment half impact participant reaction times during the trials. The boxplot below qualitatively supports the conclusion that both congruency and experiment half have an effect, where congruent conditions result in faster reaction times than incongruent ones and that trials in the second half of the experiment have faster reaction times than those in the first half. It is unclear from the plot whether or not there is any interaction between these two variables.
+
+```{r, echo=FALSE, fig.align='center'}
+rt_log10_boxplot.plot
+```
+
+We quantify the effects of these variables on reaction time by again fitting a linear mixed effects model. In particular, we fit the log-transformed reaction times as a response to congruency, experiment half, and their interaction. We log-transform the reaction times so as to have an underlying data distribution which is more normal, as can be shown in a comparison between the regular and log-transformed reaction times in the figures below.
+
+```{r, echo=FALSE, fig.align='center'}
+rt_histogram.plot
+rt_log10_histogram.plot
+```
+
+Similar to the accuracy experiment, we treat participant and item as random effects (via their intercepts and slopes), and assess significants against the standard alpha value of $\alpha = 0.05$.
+
+The model found a significant effect of congruency, such that participants were slower on incongruent trials compared to congruent trials [$\beta = `r round(coef(rt_log10.lmer_sum)[2,1], 2)`$, $SE = `r round(coef(rt_log10.lmer_sum)[2,2], 2)`$, $\chi^2(1) = `r round(rt_log10_congruency.anova$Chisq[2], 2)`$, $p < 0.05$]. There was also a significant effect of experiment half, such that participants were faster in the second half of the experiment [$\beta = `r round(coef(rt_log10.lmer_sum)[3,1], 2)`$, $SE = `r round(coef(rt_log10.lmer_sum)[3,2], 2)`$, $\chi^2(1) = `r round(rt_log10_half.anova$Chisq[2], 2)`$, $p  < 0.05$]. There was no significant interaction of congruency and experiment half.
+
+```{r}
+coef(rt_log10.lmer_sum)[,1:2]
+rt_log10_congruency.anova[1:8]
+rt_log10_half.anova[1:8]
+rt_log10_congruencyxhalf.anova[1:8]
+```
+
+These results support the conclusion that both congruency and experiment half meaningfully impact participant reaction time (with congruent and second-half conditions resulting in lowered times), but that there is no significant interaction between these conditions.
+
+
+# Conclusion
+
+In the data from the Stroop experiment, congruency is meaningfully correlated with higher accuracy and lower reaction time, while being in the second-half of the experiment is meaningfully correlated with lower reaction time but not accuracy. 
