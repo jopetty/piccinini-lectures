@@ -12,14 +12,16 @@
     "properties": {
         "tempName": "Untitled1",
         "source_window_id": "",
-        "Source": "Source"
+        "Source": "Source",
+        "cursorPosition": "38,45",
+        "scrollLine": "15"
     },
     "folds": "",
-    "lastKnownWriteTime": 1734649871,
+    "lastKnownWriteTime": 1734650576,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1734649871846,
+    "last_content_update": 1734650576302,
     "read_only": false,
     "read_only_alternatives": []
 }
