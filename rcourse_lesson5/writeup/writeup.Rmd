@@ -1,0 +1,52 @@
+---
+title: "Lesson 5 Write-Up"
+author: "Jackson Petty"
+date: "2024-12-20"
+output: html_document
+---
+
+```{r, echo=FALSE}
+load("environment.RData")
+```
+
+# Introduction
+
+We examine election data from eight United States presidential elections involving an incumbant candidate (1964, 1972, 1980, 1984, 1992, 1996, 2004, 2012) to study whether the percentage of the voting population that voted for the incumbant candidate varied by political party (Democrat or Republic) and whether the state was part of the Union or Confederacy during the Civil War.
+
+# Data
+
+We perform Analasis of Variance (ANOVA) tests on our model, so we class-balance the data to include results from 11 confederate states and 11 union states; since there are more states which were in the Union than the Confederancy, this balancing invovled subsampling the union data to only include the first 11 union states admitted to the US.
+
+# Results
+
+We first examine plots for the incumbent vote percentage by our two conditions, Party (Democrat vs Republican) and Union status (Union vs Confederacy). In the histogram below, we see that the data are decently, though not perfectly, normal, and so no obvious transform presents itself.
+
+```{r, echo=FALSE, fig.align='center', warning=FALSE}
+incumbent_histogram_full.plot
+# incumbent_histogram_sum.plot
+```
+
+The boxplot below shows that there is an apparent difference in incumbency vote percentage by party, but that the direction of this effect is reversed between union status: in Union states, democrats have an incumbency advantage while the reverse is true in formerly-confederate states. This suggests that there is an interaction between Party and Union Status on incumbency vote percentage.
+
+```{r, echo=F, fig.align = 'center'}
+incumbent_boxplot.plot
+#incumbent_barplot.plot
+```
+
+To quantify these effects, we run an ANOVA, treating incumbency voting as a response to incumbent party, union status, and their interaction. As shown below, the model does not find a statistically significant effect for either party or union status, although the effect of party does have a trend [$F(1, 20) = 3.59$, $p = 0.07$]. There is a significant interaction between the two effects however: [$F(1, 20) = 34.94$, $p < 0.001$].
+
+```{r}
+incumbent.aov_sum
+```
+
+
+We perform t-tests to analyze the interaction of incumbent party and union status. We perform a paired t-test within union-status. For Union states we find no significant effect; for formerly-Confederate states, however, we find a strong effect ($p < 0.001$) such that within formerly-Confederate states Republican incumbents have a strong advantage. The strength of this preference is reflected in the mean differences for each test.
+
+```{r}
+incumbent_union.ttest
+incumbent_confederacy.ttest
+```
+
+# Conclusion
+
+Formerly confederate states show a strong incumbency advantage for Republican candidates over Democratic ones. This effect is reversed for union states, although the magnitude of the effect is stronger for Republicans in formerly Confederate states than it is for Democrats in union ones.
